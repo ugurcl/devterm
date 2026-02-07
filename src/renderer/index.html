@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self';">
+  <title>DevTerm</title>
+  <link rel="stylesheet" href="../../node_modules/@xterm/xterm/css/xterm.css">
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/titlebar.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/ssh.css">
+</head>
+<body>
+  <div id="app">
+    <div class="titlebar" id="titlebar">
+      <div class="titlebar-drag">
+        <div class="titlebar-icon">&gt;_</div>
+        <span class="titlebar-title">DevTerm</span>
+      </div>
+      <div class="titlebar-controls">
+        <button class="titlebar-btn" id="btn-minimize">&#x2014;</button>
+        <button class="titlebar-btn" id="btn-maximize">&#x25A1;</button>
+        <button class="titlebar-btn titlebar-close" id="btn-close">&#x2715;</button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <span class="toolbar-label">Layout</span>
+        <button id="btn-single" data-layout="single">&#x25A3;</button>
+        <button id="btn-split-v" data-layout="split-v">&#x258D;</button>
+        <button id="btn-split-h" data-layout="split-h">&#x2581;</button>
+        <button id="btn-left2-right1" data-layout="left2-right1">&#x258C;&#x2590;</button>
+        <button id="btn-left1-right2" data-layout="left1-right2">&#x2590;&#x258C;</button>
+        <button id="btn-top1-bottom2" data-layout="top1-bottom2">&#x2580;&#x2584;</button>
+        <button id="btn-top2-bottom1" data-layout="top2-bottom1">&#x2584;&#x2580;</button>
+        <button id="btn-quad" data-layout="quad">&#x259A;</button>
+      </div>
+
+      <div class="toolbar-separator"></div>
+
+      <div class="toolbar-group">
+        <span class="toolbar-label">Theme</span>
+        <select id="theme-select"></select>
+      </div>
+
+      <div class="toolbar-separator"></div>
+
+      <div class="toolbar-group">
+        <span class="toolbar-label">Font</span>
+        <div class="font-size-control">
+          <input type="range" id="font-range" min="10" max="24" step="1">
+          <span id="font-label">14px</span>
+        </div>
+      </div>
+
+      <div class="toolbar-separator"></div>
+
+      <div class="toolbar-group">
+        <button id="btn-ssh">&#x1F5A5; SSH</button>
+        <button id="btn-upload">&#x2191; Upload</button>
+        <button id="btn-commands">&#x2630; Commands</button>
+      </div>
+
+      <div class="spacer"></div>
+    </div>
+
+    <div class="pane-container layout-single" id="pane-container"></div>
+
+    <div class="statusbar">
+      <div class="statusbar-left">
+        <div class="statusbar-item">
+          <span class="statusbar-dot" id="status-dot"></span>
+          <span id="status-text">Ready</span>
+        </div>
+        <div class="statusbar-item">
+          <span id="pane-count">1 pane</span>
+        </div>
+      </div>
+      <div class="statusbar-right">
+        <div class="statusbar-item shortcut-hint">
+          <kbd>Ctrl+\</kbd> split v
+          <kbd>Ctrl+-</kbd> split h
+          <kbd>Ctrl+Shift+S</kbd> ssh
+          <kbd>Ctrl+Shift+U</kbd> upload
+          <kbd>Ctrl+B</kbd> commands
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay"></div>
+
+  <div class="commands-panel" id="commands-panel">
+    <div class="commands-panel-header">
+      <h3>Quick Commands</h3>
+      <button id="commands-close">&times;</button>
+    </div>
+    <div class="commands-list"></div>
+    <div class="commands-add">
+      <input type="text" id="cmd-name" placeholder="Command name">
+      <input type="text" id="cmd-command" placeholder="Command (e.g. npm start)">
+      <button id="cmd-add">Add Command</button>
+    </div>
+  </div>
+
+  <div class="ssh-panel" id="ssh-panel">
+    <div class="ssh-panel-header">
+      <h3>SSH Connections</h3>
+      <button id="ssh-close">&times;</button>
+    </div>
+    <div class="ssh-profiles-list"></div>
+    <div class="ssh-panel-bottom">
+      <button id="ssh-add">+ Add Server</button>
+    </div>
+    <div class="ssh-form">
+      <input type="hidden" id="ssh-form-id">
+      <label>Name</label>
+      <input type="text" id="ssh-name" placeholder="My Server">
+      <div class="ssh-form-row">
+        <div>
+          <label>Host</label>
+          <input type="text" id="ssh-host" placeholder="192.168.1.100">
+        </div>
+        <div>
+          <label>Port</label>
+          <input type="number" id="ssh-port" value="22">
+        </div>
+      </div>
+      <label>Username</label>
+      <input type="text" id="ssh-username" placeholder="root">
+      <label>Auth Type</label>
+      <select id="ssh-auth-type">
+        <option value="password">Password</option>
+        <option value="key">Private Key</option>
+      </select>
+      <div class="ssh-password-field">
+        <label>Password</label>
+        <input type="password" id="ssh-password" placeholder="Enter password">
+      </div>
+      <div class="ssh-key-field" style="display:none">
+        <label>Key File Path</label>
+        <input type="text" id="ssh-key-path" placeholder="C:\Users\...\.ssh\id_rsa">
+      </div>
+      <label>Color</label>
+      <input type="color" id="ssh-color" value="#7aa2f7">
+      <div class="ssh-form-buttons">
+        <button id="ssh-save">Save</button>
+        <button id="ssh-test">Test</button>
+        <button id="ssh-cancel">Cancel</button>
+      </div>
+      <div class="ssh-test-result"></div>
+    </div>
+  </div>
+
+  <div class="upload-modal" id="upload-modal">
+    <div class="upload-modal-content">
+      <div class="upload-modal-header">
+        <h3>Upload Files</h3>
+        <button id="upload-close">&times;</button>
+      </div>
+      <div class="upload-modal-body">
+        <label>Target Server</label>
+        <select id="upload-profile-select"></select>
+        <label>Local Path</label>
+        <div class="upload-browse-row">
+          <input type="text" id="upload-local-path" readonly placeholder="Select file or folder...">
+          <button id="upload-browse-file" class="upload-browse-btn">File</button>
+          <button id="upload-browse-folder" class="upload-browse-btn">Folder</button>
+        </div>
+        <div class="upload-tree-container" id="upload-tree-container" style="display:none">
+          <div class="upload-tree-header">
+            <span class="upload-tree-label">Select Files</span>
+            <div class="upload-tree-actions">
+              <button type="button" class="upload-tree-action-btn" id="upload-tree-check-all">All</button>
+              <button type="button" class="upload-tree-action-btn" id="upload-tree-uncheck-all">None</button>
+              <button type="button" class="upload-tree-action-btn" id="upload-tree-collapse">Collapse</button>
+            </div>
+          </div>
+          <div class="upload-tree-info" id="upload-tree-info"></div>
+          <div class="upload-tree" id="upload-tree"></div>
+        </div>
+        <label>Remote Destination</label>
+        <input type="text" id="upload-remote-path" placeholder="/home/user/destination">
+        <div class="upload-progress-area" id="upload-progress-area" style="display:none">
+          <div class="upload-progress-bar">
+            <div class="upload-progress-fill" id="upload-progress-fill"></div>
+          </div>
+          <span class="upload-progress-text" id="upload-progress-text"></span>
+        </div>
+        <div class="upload-status" id="upload-status"></div>
+        <button id="upload-start" class="upload-start-btn">Upload</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../node_modules/@xterm/xterm/lib/xterm.js"></script>
+  <script src="../../node_modules/@xterm/addon-fit/lib/addon-fit.js"></script>
+  <script src="../../node_modules/@xterm/addon-web-links/lib/addon-web-links.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/terminal-bridge.js"></script>
+  <script src="js/commands.js"></script>
+  <script src="js/shortcuts.js"></script>
+  <script src="js/titlebar.js"></script>
+  <script src="js/ssh-panel.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
