@@ -6,6 +6,7 @@ const { v4: uuidv4 } = require('uuid');
 class CredentialStore {
   constructor() {
     this.filePath = path.join(app.getPath('userData'), 'ssh-profiles.json');
+    this.githubFilePath = path.join(app.getPath('userData'), 'github-configs.json');
   }
 
   _loadRaw() {
@@ -86,6 +87,59 @@ class CredentialStore {
   deleteProfile(id) {
     const profiles = this._loadRaw().filter(p => p.id !== id);
     this._saveRaw(profiles);
+  }
+
+  // GitHub config methods
+
+  _loadGitHubRaw() {
+    if (!fs.existsSync(this.githubFilePath)) return [];
+    try {
+      return JSON.parse(fs.readFileSync(this.githubFilePath, 'utf-8'));
+    } catch {
+      return [];
+    }
+  }
+
+  _saveGitHubRaw(configs) {
+    const dir = path.dirname(this.githubFilePath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(this.githubFilePath, JSON.stringify(configs, null, 2), { mode: 0o600 });
+  }
+
+  getGitHubConfigs() {
+    return this._loadGitHubRaw().map(c => ({
+      id: c.id,
+      profileId: c.profileId,
+      repoUrl: c.repoUrl,
+      gitUserName: c.gitUserName,
+      gitUserEmail: c.gitUserEmail,
+      keyTitle: c.keyTitle,
+      createdAt: c.createdAt,
+    }));
+  }
+
+  saveGitHubConfig(config) {
+    const configs = this._loadGitHubRaw();
+    const encrypted = { ...config };
+    if (config.pat) encrypted.pat = this._encrypt(config.pat);
+
+    if (!config.id) {
+      encrypted.id = uuidv4().slice(0, 8);
+      encrypted.createdAt = Date.now();
+      configs.push(encrypted);
+    } else {
+      const idx = configs.findIndex(c => c.id === config.id);
+      if (idx !== -1) configs[idx] = encrypted;
+      else configs.push(encrypted);
+    }
+
+    this._saveGitHubRaw(configs);
+    return encrypted.id;
+  }
+
+  deleteGitHubConfig(id) {
+    const configs = this._loadGitHubRaw().filter(c => c.id !== id);
+    this._saveGitHubRaw(configs);
   }
 }
 

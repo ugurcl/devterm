@@ -48,6 +48,12 @@ function initShortcuts(app) {
       app.openUpload();
       return;
     }
+
+    if (e.ctrlKey && e.shiftKey && e.key === 'G') {
+      e.preventDefault();
+      app.openGitHub();
+      return;
+    }
   });
 }
 

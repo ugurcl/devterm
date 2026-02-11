@@ -16,6 +16,7 @@ class DevTermApp {
     this.statusText = document.getElementById('status-text');
     this.paneCount = document.getElementById('pane-count');
     this.sshPanel = null;
+    this.githubPanel = null;
   }
 
   async init() {
@@ -42,6 +43,7 @@ class DevTermApp {
     overlay.addEventListener('click', () => {
       this.toggleCommands(false);
       if (this.sshPanel) this.sshPanel.toggle(false);
+      if (this.githubPanel) this.githubPanel.close();
     });
 
     const sshContainer = document.getElementById('ssh-panel');
@@ -49,6 +51,8 @@ class DevTermApp {
       this._createSSHPane(profileId, name, color);
       this.sshPanel.toggle(false);
     });
+
+    this.githubPanel = new GitHubPanel(document.getElementById('github-modal'));
 
     await this.setLayout('single');
   }
@@ -82,6 +86,7 @@ class DevTermApp {
     document.getElementById('btn-commands').addEventListener('click', () => this.toggleCommands());
     document.getElementById('btn-ssh').addEventListener('click', () => this.toggleSSH());
     document.getElementById('btn-upload').addEventListener('click', () => this.openUpload());
+    document.getElementById('btn-github').addEventListener('click', () => this.openGitHub());
   }
 
   _updatePaneCount() {
@@ -401,6 +406,13 @@ class DevTermApp {
     const activePane = this.panes[this.activeIndex];
     const preselect = (activePane && activePane.profileId) ? activePane.profileId : undefined;
     this.sshPanel.openUploadModal(preselect);
+  }
+
+  openGitHub() {
+    if (!this.githubPanel) return;
+    const activePane = this.panes[this.activeIndex];
+    const preselect = (activePane && activePane.profileId) ? activePane.profileId : undefined;
+    this.githubPanel.open(preselect);
   }
 
   applyThemeToTerminals() {

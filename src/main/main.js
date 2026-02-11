@@ -3,6 +3,7 @@ const path = require('path');
 const TerminalManager = require('./terminal-manager');
 const { SSHManager } = require('./ssh-manager');
 const CredentialStore = require('./credential-store');
+const GitHubSetup = require('./github-setup');
 const { registerHandlers } = require('./ipc-handlers');
 
 app.commandLine.appendSwitch('disable-gpu-shader-disk-cache');
@@ -39,8 +40,9 @@ function createWindow() {
   terminalManager = new TerminalManager();
   credentialStore = new CredentialStore();
   sshManager = new SSHManager(credentialStore);
+  const githubSetup = new GitHubSetup(credentialStore);
 
-  registerHandlers(mainWindow, terminalManager, sshManager, credentialStore);
+  registerHandlers(mainWindow, terminalManager, sshManager, credentialStore, githubSetup);
 
   mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
 

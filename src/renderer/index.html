@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="css/titlebar.css">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/ssh.css">
+  <link rel="stylesheet" href="css/github.css">
 </head>
 <body>
   <div id="app">
@@ -60,6 +61,7 @@
       <div class="toolbar-group">
         <button id="btn-ssh">&#x1F5A5; SSH</button>
         <button id="btn-upload">&#x2191; Upload</button>
+        <button id="btn-github">&#x1F4BB; GitHub</button>
         <button id="btn-commands">&#x2630; Commands</button>
       </div>
 
@@ -84,6 +86,7 @@
           <kbd>Ctrl+-</kbd> split h
           <kbd>Ctrl+Shift+S</kbd> ssh
           <kbd>Ctrl+Shift+U</kbd> upload
+          <kbd>Ctrl+Shift+G</kbd> github
           <kbd>Ctrl+B</kbd> commands
         </div>
       </div>
@@ -195,6 +198,50 @@
     </div>
   </div>
 
+  <div class="github-modal" id="github-modal">
+    <div class="github-modal-content">
+      <div class="github-modal-header">
+        <h3>GitHub Auto-Config</h3>
+        <button id="github-close">&times;</button>
+      </div>
+      <div class="github-modal-body">
+        <label>Target Server</label>
+        <select id="github-profile-select"></select>
+
+        <label>GitHub Repository URL</label>
+        <input type="text" id="github-repo-url" placeholder="https://github.com/user/repo">
+
+        <label>Personal Access Token (PAT)</label>
+        <div class="github-pat-row">
+          <input type="password" id="github-pat" placeholder="ghp_xxxxxxxxxxxx">
+          <button id="github-pat-toggle" title="Show/Hide">&#x1F441;</button>
+        </div>
+        <div class="github-validate-row">
+          <button id="github-validate" class="github-validate-btn">Validate PAT</button>
+          <span id="github-validate-result" class="github-validate-result"></span>
+        </div>
+
+        <div class="github-form-row">
+          <div>
+            <label>Git User Name</label>
+            <input type="text" id="github-user-name" placeholder="John Doe">
+          </div>
+          <div>
+            <label>Git User Email</label>
+            <input type="text" id="github-user-email" placeholder="john@example.com">
+          </div>
+        </div>
+
+        <label>SSH Key Title (for GitHub)</label>
+        <input type="text" id="github-key-title" placeholder="DevTerm - My Server">
+
+        <div class="github-step-list" id="github-step-list" style="display:none"></div>
+        <div class="github-status" id="github-status"></div>
+        <button id="github-start" class="github-start-btn">Start Setup</button>
+      </div>
+    </div>
+  </div>
+
   <script src="../../node_modules/@xterm/xterm/lib/xterm.js"></script>
   <script src="../../node_modules/@xterm/addon-fit/lib/addon-fit.js"></script>
   <script src="../../node_modules/@xterm/addon-web-links/lib/addon-web-links.js"></script>
@@ -204,6 +251,7 @@
   <script src="js/shortcuts.js"></script>
   <script src="js/titlebar.js"></script>
   <script src="js/ssh-panel.js"></script>
+  <script src="js/github-panel.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

@@ -368,6 +368,7 @@ class SSHPanel {
         <div class="ssh-profile-actions">
           <button class="ssh-profile-btn ssh-connect-btn" data-id="${profile.id}" title="Connect">&#x25B6;</button>
           <button class="ssh-profile-btn ssh-upload-btn" data-id="${profile.id}" title="Upload">&#x2191;</button>
+          <button class="ssh-profile-btn ssh-github-btn" data-id="${profile.id}" title="GitHub Setup">&#x1F4BB;</button>
           <button class="ssh-profile-btn ssh-delete-btn" data-id="${profile.id}" title="Delete">&#x2715;</button>
         </div>
       `;
@@ -380,6 +381,13 @@ class SSHPanel {
       item.querySelector('.ssh-upload-btn').addEventListener('click', (e) => {
         e.stopPropagation();
         this._openUpload(profile.id);
+      });
+
+      item.querySelector('.ssh-github-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (window.DevTerm && window.DevTerm.githubPanel) {
+          window.DevTerm.githubPanel.open(profile.id);
+        }
       });
 
       item.querySelector('.ssh-delete-btn').addEventListener('click', async (e) => {

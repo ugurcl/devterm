@@ -2,7 +2,7 @@ const { ipcMain, dialog } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
-function registerHandlers(mainWindow, terminalManager, sshManager, credentialStore) {
+function registerHandlers(mainWindow, terminalManager, sshManager, credentialStore, githubSetup) {
   ipcMain.handle('terminal:create', async (_event, cols, rows) => {
     const terminal = terminalManager.create(cols, rows);
 
@@ -148,6 +148,38 @@ function registerHandlers(mainWindow, terminalManager, sshManager, credentialSto
     } catch (err) {
       return { success: false, error: err.message || String(err) };
     }
+  });
+
+  // GitHub setup handlers
+
+  ipcMain.handle('github:run-setup', async (_event, config) => {
+    try {
+      const result = await githubSetup.runSetup(config.profileId, config, (progress) => {
+        if (!mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('github:setup-progress', progress);
+        }
+      }, config.startFromStep || 0);
+      return result;
+    } catch (err) {
+      return { success: false, error: err.message || String(err) };
+    }
+  });
+
+  ipcMain.handle('github:save-config', async (_event, config) => {
+    return credentialStore.saveGitHubConfig(config);
+  });
+
+  ipcMain.handle('github:get-configs', async () => {
+    return credentialStore.getGitHubConfigs();
+  });
+
+  ipcMain.handle('github:delete-config', async (_event, id) => {
+    credentialStore.deleteGitHubConfig(id);
+    return true;
+  });
+
+  ipcMain.handle('github:validate-pat', async (_event, { pat }) => {
+    return githubSetup.validatePAT(pat);
   });
 
   ipcMain.on('window:minimize', () => {

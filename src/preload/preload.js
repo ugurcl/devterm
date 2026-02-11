@@ -37,6 +37,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return () => ipcRenderer.removeListener('ssh:upload-progress', listener);
   },
 
+  runGitHubSetup: (config) => ipcRenderer.invoke('github:run-setup', config),
+  saveGitHubConfig: (config) => ipcRenderer.invoke('github:save-config', config),
+  getGitHubConfigs: () => ipcRenderer.invoke('github:get-configs'),
+  deleteGitHubConfig: (id) => ipcRenderer.invoke('github:delete-config', id),
+  validateGitHubPAT: (pat) => ipcRenderer.invoke('github:validate-pat', pat),
+  onGitHubSetupProgress: (callback) => {
+    const listener = (_event, data) => callback(data);
+    ipcRenderer.on('github:setup-progress', listener);
+    return () => ipcRenderer.removeListener('github:setup-progress', listener);
+  },
+
   minimizeWindow: () => ipcRenderer.send('window:minimize'),
   maximizeWindow: () => ipcRenderer.send('window:maximize'),
   closeWindow: () => ipcRenderer.send('window:close'),
