@@ -150,7 +150,10 @@ class GitHubSetup {
   }
 
   async _stepVerifyConnection(client) {
-    await this._execCommand(client, 'ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null');
+    const keyscan = await this._execCommand(client, 'ssh-keyscan -t ed25519,rsa github.com >> ~/.ssh/known_hosts 2>/dev/null');
+    if (keyscan.exitCode !== 0) {
+      console.warn('[GitHubSetup] ssh-keyscan failed, continuing anyway');
+    }
 
     await this._execCommand(client,
       'grep -q "IdentityFile ~/.ssh/github_devterm" ~/.ssh/config 2>/dev/null || printf "\\nHost github.com\\n  IdentityFile ~/.ssh/github_devterm\\n  IdentitiesOnly yes\\n" >> ~/.ssh/config'
