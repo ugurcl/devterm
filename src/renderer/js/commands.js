@@ -1,12 +1,38 @@
 const STORAGE_KEY = 'devterm-commands';
 
 const DEFAULT_COMMANDS = [
+  // Node.js
   { name: 'npm start', command: 'npm start' },
   { name: 'npm run dev', command: 'npm run dev' },
+  { name: 'npm install', command: 'npm install' },
+  { name: 'npm test', command: 'npm test' },
+  { name: 'npm run build', command: 'npm run build' },
+  { name: 'npm outdated', command: 'npm outdated' },
+  { name: 'node version', command: 'node -v && npm -v' },
+  { name: 'npm audit', command: 'npm audit' },
+  // Python
+  { name: 'python version', command: 'python --version' },
+  { name: 'pip install -r', command: 'pip install -r requirements.txt' },
+  { name: 'pip freeze', command: 'pip freeze' },
+  { name: 'python manage.py runserver', command: 'python manage.py runserver' },
+  { name: 'pytest', command: 'pytest -v' },
+  { name: 'venv create', command: 'python -m venv venv' },
+  { name: 'venv activate', command: 'source venv/bin/activate' },
+  { name: 'pip list outdated', command: 'pip list --outdated' },
+  // Git
   { name: 'git status', command: 'git status' },
   { name: 'git log', command: 'git log --oneline -10' },
+  { name: 'git pull', command: 'git pull' },
+  { name: 'git branch', command: 'git branch -a' },
+  { name: 'git diff', command: 'git diff' },
+  // Docker
   { name: 'docker ps', command: 'docker ps' },
   { name: 'docker-compose up', command: 'docker-compose up' },
+  { name: 'docker images', command: 'docker images' },
+  // System
+  { name: 'disk usage', command: 'df -h' },
+  { name: 'memory usage', command: 'free -h' },
+  { name: 'running processes', command: 'ps aux --sort=-%mem | head -15' },
 ];
 
 function loadCommands() {
