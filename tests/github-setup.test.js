@@ -106,6 +106,13 @@ describe('GitHubSetup', () => {
       .toBe('git@github.com:user/repo.git');
   });
 
+  test('handles trailing slashes in repo URL', () => {
+    expect(setup._convertRepoUrl('https://github.com/user/repo/'))
+      .toBe('git@github.com:user/repo.git');
+    expect(setup._convertRepoUrl('https://github.com/user/repo///'))
+      .toBe('git@github.com:user/repo.git');
+  });
+
   test('validates a valid PAT', async () => {
     https._mockResponse = { statusCode: 200, body: '{"login":"testuser"}' };
     const result = await setup.validatePAT('ghp_testtoken');

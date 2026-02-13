@@ -200,14 +200,15 @@ class GitHubSetup {
   }
 
   _convertRepoUrl(url) {
-    const httpsMatch = url.match(/^https?:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?$/);
+    const cleaned = url.replace(/\/+$/, '');
+    const httpsMatch = cleaned.match(/^https?:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?$/);
     if (httpsMatch) {
       return `git@github.com:${httpsMatch[1]}/${httpsMatch[2]}.git`;
     }
-    if (url.startsWith('git@github.com:')) {
-      return url.endsWith('.git') ? url : url + '.git';
+    if (cleaned.startsWith('git@github.com:')) {
+      return cleaned.endsWith('.git') ? cleaned : cleaned + '.git';
     }
-    return url;
+    return cleaned;
   }
 
   _connectSSH(decryptedProfile) {
