@@ -178,7 +178,7 @@ function registerHandlers(mainWindow, terminalManager, sshManager, credentialSto
     return true;
   });
 
-  ipcMain.handle('github:validate-pat', async (_event, { pat }) => {
+  ipcMain.handle('github:validate-pat', async (_event, pat) => {
     return githubSetup.validatePAT(pat);
   });
 

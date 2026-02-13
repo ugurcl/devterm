@@ -16,6 +16,10 @@ class GitHubSetup {
     this.credentialStore = credentialStore;
   }
 
+  _shellEscape(str) {
+    return "'" + String(str).replace(/'/g, "'\\''") + "'";
+  }
+
   async runSetup(profileId, config, onProgress, startFromStep = 0) {
     const { repoUrl, pat, gitUserName, gitUserEmail, keyTitle } = config;
     const sshRepoUrl = this._convertRepoUrl(repoUrl);
@@ -46,9 +50,14 @@ class GitHubSetup {
             case 1:
               result = await this._stepReadPublicKey(client);
               break;
-            case 2:
-              result = await this._stepAddKeyToGitHub(pat, results[1].output, keyTitle);
+            case 2: {
+              const pubKey = results[1] && results[1].output ? results[1].output : null;
+              if (!pubKey) {
+                throw new Error('Public key not available. Cannot skip key reading step.');
+              }
+              result = await this._stepAddKeyToGitHub(pat, pubKey, keyTitle);
               break;
+            }
             case 3:
               result = await this._stepConfigureGit(client, gitUserName, gitUserEmail);
               break;
@@ -87,7 +96,8 @@ class GitHubSetup {
       return 'Key already exists, skipping generation';
     }
     await this._execCommand(client, 'mkdir -p ~/.ssh && chmod 700 ~/.ssh');
-    const result = await this._execCommand(client, `ssh-keygen -t ed25519 -C "${email}" -f ~/.ssh/github_devterm -N ""`);
+    const safeEmail = this._shellEscape(email);
+    const result = await this._execCommand(client, `ssh-keygen -t ed25519 -C ${safeEmail} -f ~/.ssh/github_devterm -N ""`);
     if (result.exitCode !== 0) throw new Error(result.stderr || 'ssh-keygen failed');
     return 'SSH key pair generated';
   }
@@ -124,8 +134,10 @@ class GitHubSetup {
   }
 
   async _stepConfigureGit(client, name, email) {
+    const safeName = this._shellEscape(name);
+    const safeEmail = this._shellEscape(email);
     const result = await this._execCommand(client,
-      `git config --global user.name "${name}" && git config --global user.email "${email}"`
+      `git config --global user.name ${safeName} && git config --global user.email ${safeEmail}`
     );
     if (result.exitCode !== 0) {
       if (result.stderr.includes('not found') || result.stderr.includes('command not found')) {
@@ -139,13 +151,8 @@ class GitHubSetup {
   async _stepVerifyConnection(client) {
     await this._execCommand(client, 'ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null');
 
-    const configBlock = [
-      'Host github.com',
-      '  IdentityFile ~/.ssh/github_devterm',
-      '  IdentitiesOnly yes',
-    ].join('\\n');
     await this._execCommand(client,
-      `grep -q "IdentityFile ~/.ssh/github_devterm" ~/.ssh/config 2>/dev/null || echo -e "\\n${configBlock}" >> ~/.ssh/config`
+      'grep -q "IdentityFile ~/.ssh/github_devterm" ~/.ssh/config 2>/dev/null || printf "\\nHost github.com\\n  IdentityFile ~/.ssh/github_devterm\\n  IdentitiesOnly yes\\n" >> ~/.ssh/config'
     );
     await this._execCommand(client, 'chmod 600 ~/.ssh/config 2>/dev/null');
 
@@ -163,8 +170,9 @@ class GitHubSetup {
   }
 
   async _stepCloneRepo(client, repoUrl) {
+    const safeUrl = this._shellEscape(repoUrl);
     const result = await this._execCommand(client,
-      `GIT_SSH_COMMAND="ssh -i ~/.ssh/github_devterm -o IdentitiesOnly=yes" git clone ${repoUrl}`,
+      `GIT_SSH_COMMAND="ssh -i ~/.ssh/github_devterm -o IdentitiesOnly=yes" git clone ${safeUrl}`,
       30000
     );
     if (result.exitCode !== 0) {
