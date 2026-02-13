@@ -2,6 +2,7 @@ class GitHubPanel {
   constructor(modalElement) {
     this.modal = modalElement;
     this._progressCleanup = null;
+    this._lastFailedStep = null;
     this._initUI();
   }
 
@@ -58,6 +59,7 @@ class GitHubPanel {
     stepList.style.display = 'none';
     stepList.innerHTML = '';
 
+    this._lastFailedStep = null;
     this.modal.classList.add('open');
   }
 
@@ -192,20 +194,31 @@ class GitHubPanel {
       gitUserName: document.getElementById('github-user-name').value.trim(),
       gitUserEmail: document.getElementById('github-user-email').value.trim(),
       keyTitle: document.getElementById('github-key-title').value.trim() || 'DevTerm',
+      startFromStep: this._lastFailedStep || 0,
     };
 
     try {
       const result = await window.electronAPI.runGitHubSetup(config);
 
       if (result.success) {
+        await window.electronAPI.saveGitHubConfig({
+          profileId: config.profileId,
+          repoUrl: config.repoUrl,
+          pat: config.pat,
+          gitUserName: config.gitUserName,
+          gitUserEmail: config.gitUserEmail,
+          keyTitle: config.keyTitle,
+        });
+        this._lastFailedStep = null;
         statusEl.textContent = 'Setup completed successfully!';
         statusEl.className = 'github-status success';
         startBtn.textContent = 'Done';
       } else {
+        this._lastFailedStep = result.failedStep;
         const failedStep = result.steps ? result.steps.find(s => s.status === 'error') : null;
         statusEl.textContent = 'Setup failed' + (failedStep ? ': ' + failedStep.output : '');
         statusEl.className = 'github-status error';
-        startBtn.textContent = 'Retry';
+        startBtn.textContent = 'Retry from failed step';
         startBtn.disabled = false;
       }
     } catch (err) {
