@@ -242,17 +242,26 @@ class GitHubSetup {
 
   _execCommand(client, command, timeout = 15000) {
     return new Promise((resolve, reject) => {
+      let settled = false;
       const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        if (activeStream) {
+          try { activeStream.close(); } catch (_) {}
+        }
         reject(new Error('Command timed out: ' + command.substring(0, 50)));
       }, timeout);
+
+      let activeStream = null;
 
       client.exec(command, (err, stream) => {
         if (err) {
           clearTimeout(timer);
-          reject(err);
+          if (!settled) { settled = true; reject(err); }
           return;
         }
 
+        activeStream = stream;
         let stdout = '';
         let stderr = '';
 
@@ -261,7 +270,7 @@ class GitHubSetup {
 
         stream.on('close', (code) => {
           clearTimeout(timer);
-          resolve({ exitCode: code || 0, stdout, stderr });
+          if (!settled) { settled = true; resolve({ exitCode: code || 0, stdout, stderr }); }
         });
       });
     });
