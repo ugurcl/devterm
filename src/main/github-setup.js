@@ -119,7 +119,8 @@ class GitHubSetup {
     if (response.statusCode === 201) {
       return 'Key added to GitHub successfully';
     } else if (response.statusCode === 422) {
-      const body = JSON.parse(response.body);
+      let body;
+      try { body = JSON.parse(response.body); } catch { body = {}; }
       if (body.errors && body.errors.some(e => e.message && e.message.includes('already in use'))) {
         return 'Key already exists on GitHub';
       }
@@ -188,8 +189,9 @@ class GitHubSetup {
     try {
       const response = await this._githubAPI('GET', '/user', pat);
       if (response.statusCode === 200) {
-        const user = JSON.parse(response.body);
-        return { valid: true, username: user.login };
+        let user;
+        try { user = JSON.parse(response.body); } catch { user = {}; }
+        return { valid: true, username: user.login || 'unknown' };
       }
       return { valid: false, error: `HTTP ${response.statusCode}` };
     } catch (err) {
