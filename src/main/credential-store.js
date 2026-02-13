@@ -13,7 +13,8 @@ class CredentialStore {
     if (!fs.existsSync(this.filePath)) return [];
     try {
       return JSON.parse(fs.readFileSync(this.filePath, 'utf-8'));
-    } catch {
+    } catch (err) {
+      console.warn('[CredentialStore] Failed to parse ssh-profiles.json:', err.message);
       return [];
     }
   }
@@ -35,7 +36,8 @@ class CredentialStore {
     if (!safeStorage.isEncryptionAvailable()) return encoded;
     try {
       return safeStorage.decryptString(Buffer.from(encoded, 'base64'));
-    } catch {
+    } catch (err) {
+      console.warn('[CredentialStore] Decryption failed:', err.message);
       return encoded;
     }
   }
@@ -95,7 +97,8 @@ class CredentialStore {
     if (!fs.existsSync(this.githubFilePath)) return [];
     try {
       return JSON.parse(fs.readFileSync(this.githubFilePath, 'utf-8'));
-    } catch {
+    } catch (err) {
+      console.warn('[CredentialStore] Failed to parse github-configs.json:', err.message);
       return [];
     }
   }

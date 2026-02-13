@@ -48,7 +48,9 @@ class TerminalManager {
     if (!terminal) return false;
     try {
       terminal.proc.resize(cols, rows);
-    } catch (_) {}
+    } catch (err) {
+      console.warn(`[TerminalManager] resize failed for ${id}:`, err.message);
+    }
     return true;
   }
 
@@ -58,7 +60,9 @@ class TerminalManager {
 
     try {
       terminal.proc.kill();
-    } catch (_) {}
+    } catch (err) {
+      console.warn(`[TerminalManager] kill failed for ${id}:`, err.message);
+    }
 
     this.terminals.delete(id);
     return true;

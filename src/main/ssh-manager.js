@@ -13,7 +13,9 @@ class SSHTerminal extends EventEmitter {
   }
 
   write(data) {
-    try { this.stream.write(data); } catch (_) {}
+    try { this.stream.write(data); } catch (err) {
+      console.warn(`[SSHTerminal] write failed for ${this.id}:`, err.message);
+    }
   }
 
   resize(cols, rows) {
