@@ -1,5 +1,5 @@
 const { ipcMain, dialog } = require('electron');
-const fs = require('fs');
+const { readdir } = require('fs/promises');
 const path = require('path');
 
 function registerHandlers(mainWindow, terminalManager, sshManager, credentialStore, githubSetup) {
@@ -100,13 +100,13 @@ function registerHandlers(mainWindow, terminalManager, sshManager, credentialSto
     let dirCount = 0;
     let truncated = false;
 
-    function walk(absPath, relPath, depth) {
+    async function walk(absPath, relPath, depth) {
       if (depth > maxDepth) {
         return { name: path.basename(absPath), relativePath: relPath, isDir: true, children: [] };
       }
       let entries;
       try {
-        entries = fs.readdirSync(absPath, { withFileTypes: true });
+        entries = await readdir(absPath, { withFileTypes: true });
       } catch {
         return { name: path.basename(absPath), relativePath: relPath, isDir: true, children: [] };
       }
@@ -120,7 +120,7 @@ function registerHandlers(mainWindow, terminalManager, sshManager, credentialSto
         const childRel = relPath ? relPath + '/' + entry.name : entry.name;
         if (entry.isDirectory()) {
           dirCount++;
-          children.push(walk(childAbs, childRel, depth + 1));
+          children.push(await walk(childAbs, childRel, depth + 1));
         } else {
           fileCount++;
           if (fileCount <= maxFiles) {
@@ -133,7 +133,7 @@ function registerHandlers(mainWindow, terminalManager, sshManager, credentialSto
       return { name: path.basename(absPath), relativePath: relPath, isDir: true, children };
     }
 
-    const tree = walk(dirPath, '', 0);
+    const tree = await walk(dirPath, '', 0);
     return { tree, totalFiles: fileCount, totalDirs: dirCount, truncated };
   });
 
