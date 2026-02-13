@@ -287,7 +287,7 @@ class SSHManager {
     for (const part of parts) {
       current += '/' + part;
       await new Promise((resolve) => {
-        sftp.mkdir(current, (err) => resolve());
+        sftp.mkdir(current, (_err) => resolve());
       });
     }
   }
