@@ -301,9 +301,16 @@ class GitHubSetup {
         options.headers['Content-Length'] = Buffer.byteLength(postData);
       }
 
+      const maxResponseSize = 1024 * 1024; // 1MB
       const req = https.request(options, (res) => {
         let data = '';
-        res.on('data', (chunk) => { data += chunk; });
+        res.on('data', (chunk) => {
+          data += chunk;
+          if (data.length > maxResponseSize) {
+            res.destroy();
+            reject(new Error('GitHub API response too large'));
+          }
+        });
         res.on('end', () => resolve({ statusCode: res.statusCode, body: data }));
       });
 
