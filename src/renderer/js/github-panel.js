@@ -74,6 +74,7 @@ class GitHubPanel {
   async _validatePAT() {
     const pat = document.getElementById('github-pat').value.trim();
     const resultEl = document.getElementById('github-validate-result');
+    const validateBtn = document.getElementById('github-validate');
 
     if (!pat) {
       resultEl.textContent = 'Enter a PAT first';
@@ -81,16 +82,24 @@ class GitHubPanel {
       return;
     }
 
+    validateBtn.disabled = true;
     resultEl.textContent = 'Validating...';
     resultEl.className = 'github-validate-result';
 
-    const result = await window.electronAPI.validateGitHubPAT(pat);
-    if (result.valid) {
-      resultEl.textContent = 'Valid - ' + result.username;
-      resultEl.className = 'github-validate-result success';
-    } else {
-      resultEl.textContent = 'Invalid: ' + (result.error || 'Unknown error');
+    try {
+      const result = await window.electronAPI.validateGitHubPAT(pat);
+      if (result.valid) {
+        resultEl.textContent = 'Valid - ' + result.username;
+        resultEl.className = 'github-validate-result success';
+      } else {
+        resultEl.textContent = 'Invalid: ' + (result.error || 'Unknown error');
+        resultEl.className = 'github-validate-result error';
+      }
+    } catch (err) {
+      resultEl.textContent = 'Validation failed: ' + (err.message || 'Network error');
       resultEl.className = 'github-validate-result error';
+    } finally {
+      validateBtn.disabled = false;
     }
   }
 
